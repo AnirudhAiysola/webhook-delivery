@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: webhook-postgres
+    environment:
+      POSTGRES_USER: webhook
+      POSTGRES_PASSWORD: webhook
+      POSTGRES_DB: webhook
+    ports:
+      - "5433:5432"
+    volumes:
+      - webhook-pgdata:/var/lib/postgresql/data
+
+volumes:
+  webhook-pgdata:
