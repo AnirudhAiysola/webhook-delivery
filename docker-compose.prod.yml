@@ -1,0 +1,40 @@
+name: webhook-delivery-prod
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: webhook
+      POSTGRES_PASSWORD: webhook
+      POSTGRES_DB: webhook
+    volumes:
+      - webhook-prod-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webhook"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    image: webhook-delivery
+    command: npm start
+    environment:
+      DATABASE_URL: postgres://webhook:webhook@postgres:5432/webhook
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    image: webhook-delivery
+    command: npm run start:worker
+    environment:
+      DATABASE_URL: postgres://webhook:webhook@postgres:5432/webhook
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  webhook-prod-pgdata:
